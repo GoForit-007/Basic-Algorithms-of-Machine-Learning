@@ -1,0 +1,114 @@
+# 线性回归之梯度下降法的实现
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+X=np.arange(0,10,1)
+Y=np.arange(0,10,1)+np.random.rand(10)
+
+# 第一种，一个一个数算
+# 定义损失函数
+def compute_cost(w,b,X,Y):
+    total_cost=0
+    M=len(X)
+    for i in range(M):
+        x=X[i]
+        y=Y[i]
+        total_cost+=(y-w*x-b)**2
+    return total_cost/M
+
+# 定义模型超参数
+alpha=0.01
+initial_w=0
+initial_b=0
+num_iter=50
+
+
+def step_grad_desc(current_w,current_b,alpha,X,Y):
+    sum_grad_w=0
+    sum_grad_b=0
+    M=len(X)
+    # 对每个点带入公式求和
+    for i in range(M):
+        x=X[i]
+        y=Y[i]
+        sum_grad_w+=(current_w*x+current_b-y)*x
+        sum_grad_b+=current_w*x+current_b-y
+    # 利用公式求当前梯度
+    grad_w=2/M*sum_grad_w
+    grad_b=2/M*sum_grad_b
+
+    # 梯度下降，更新当前的w和b
+    update_w=current_w-alpha*grad_w
+    update_b=current_b-alpha*grad_b
+    return update_w,update_b
+
+# 定义核心梯度下降算法函数
+def grad_desc(X,Y,initial_w,initial_b,alpha,num_iter):
+    w=initial_w
+    b=initial_b
+    # 定义一个list保存所有的损失函数值，用来显示下降过程
+    cost_list=[]
+    for i in range(num_iter):
+        cost_list.append(compute_cost(w,b,X,Y))
+        w,b=step_grad_desc(w,b,alpha,X,Y)
+    return [w,b,cost_list]
+
+# 测试运行算法
+w,b,cost_list=grad_desc(X,Y,initial_w,initial_b,alpha,num_iter)
+print ("w is :",w)
+print ("b is :",b)
+
+cost=compute_cost(w,b,X,Y)
+
+
+plt.scatter(X,Y)
+
+pred_y= w*X+b
+
+plt.plot(X,pred_y,c='r')
+plt.show()
+
+
+
+
+
+# 第二种，向量化运算
+
+X=np.arange(0,10,1)
+Y=np.arange(0,10,1)+np.random.rand(10)
+
+X=np.column_stack((X,np.ones(X.shape[0]))).T
+m=X.shape[1]
+X=X.T
+Y=Y.reshape([m,1])
+# 定义模型超参数
+alpha=0.01
+
+def error_function(w,X,Y):
+    diff=np.dot(X,w)-Y
+    return (1./2*m)*np.dot(np.transpose(diff),diff)
+
+def gradient_function(w,X,Y):
+    diff=np.dot(X,w)-Y
+    return (1./m)*np.dot(np.transpose(X),diff)
+
+def gradient_decent(X,Y,alpha):
+    w=np.array([1,1]).reshape(2,1)
+    gradient=gradient_function(w,X,Y)
+    while not np.all(np.absolute(gradient)<=1e-5):
+        w=w-alpha*gradient
+        gradient=gradient_function(w,X,Y)
+    return w
+
+optimal=gradient_decent(X,Y,alpha)
+print('optimal:',optimal)
+print('error function: ',error_function(optimal,X, Y)[0,0])
+
+plt.scatter(np.arange(0,10,1),Y)
+
+pred_y= np.dot(X,optimal)
+
+plt.plot(np.arange(0,10,1),pred_y,c='r')
+plt.show()
+
