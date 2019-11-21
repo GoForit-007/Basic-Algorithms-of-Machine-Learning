@@ -1,3 +1,1 @@
-# hello-world
-Learning github
-
+# Basic Algorithm of Machine Learning
